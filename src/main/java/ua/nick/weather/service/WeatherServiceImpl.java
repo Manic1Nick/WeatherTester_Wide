@@ -109,9 +109,6 @@ public class WeatherServiceImpl implements WeatherService {
             throws ForecastNotFoundInDBException {
         City city = getCityById(cityId);
 
-        //create text line of ids pairs "forecast,actual" ("1,2;3,4;...)
-        List<String> listIds = new ArrayList<>();
-
         //this is base message with first sign %s for next adding changes to message
         String exceptionMessage = String.format("There are no %s for %s from %s in DB. " +
                 "Please update database for this date before analysis.",
@@ -124,11 +121,13 @@ public class WeatherServiceImpl implements WeatherService {
         Map<Provider, List<Forecast>> mapByProviders = allDateForecasts.stream()
                 .collect(Collectors.groupingBy(Forecast::getProvider));
 
-        for (List<Forecast> list : mapByProviders.values())
-            listIds.add(
-                    createPairIds(exceptionMessage,
-                            list.stream().collect(Collectors.groupingBy(Forecast::forecastOrActual)))
-            );
+        //create text line of ids pairs "forecast,actual" ("1,2;3,4;...)
+        List<String> listIds = new ArrayList<>();
+        for (List<Forecast> list : mapByProviders.values()) {
+            if (list.size() == 2)
+                listIds.add(createPairIds(exceptionMessage,
+                                list.stream().collect(Collectors.groupingBy(Forecast::forecastOrActual))));
+        }
 
         return listIds;
     }
