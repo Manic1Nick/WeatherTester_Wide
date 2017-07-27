@@ -36,7 +36,7 @@ public class StringUtilsTest02 {
         Map<Provider, Long> mapWithData = new HashMap<>();
         mapWithData.put(Provider.FORECA, 10L);
 
-        String messagePositive = "forecast(s) were added to database";
+        String messagePositive = "were added to database";
         String messageNegative = "no need to update forecasts from providers for this date";
 
         return Arrays.asList(new Object[][]{
@@ -49,7 +49,13 @@ public class StringUtilsTest02 {
 
     @Test
     public void test_createMessageAboutUpdateForecasts() {
-        assertThat(StringUtils.createMessageAboutUpdateForecasts(
+        assertThat(StringUtils.createMessageAboutForecasts(
+                mapForecastsByProviders, new City("Kiev", "UA")), containsString(message));
+    }
+
+    @Test
+    public void test_createMessageAboutUpdateActuals() {
+        assertThat(StringUtils.createMessageAboutActuals(
                 mapForecastsByProviders, new City("Kiev", "UA")), containsString(message));
     }
 }

@@ -60,14 +60,19 @@ public class WeatherServiceImpl implements WeatherService {
     }
 
     @Override
-    public Map<Provider, List<Forecast>> getAllNewForecasts(long cityId)
+    public List<Forecast> getAllNewForecasts(long cityId)
             throws IOException, URISyntaxException, ParseException, NoDataFromProviderException {
-        Map<Provider, List<Forecast>> allForecasts = new HashMap<>();
+        List<Forecast> allForecasts = new ArrayList<>();
 
         for (Provider provider : Provider.values())
-            if (needUpdateForecasts(provider, cityId))
-                allForecasts.put(provider, createListForecastsFromProviderByCityId(provider, cityId));
+            if (needUpdateForecasts(provider, cityId)) {
+                List<Forecast> list = getNewForecastsFromProvider(provider, cityId);
 
+                if (!provider.hasExpandedJson())
+                    list = saveListNewForecasts(list);
+
+                allForecasts.addAll(list);
+            }
         return allForecasts;
     }
 
@@ -90,22 +95,7 @@ public class WeatherServiceImpl implements WeatherService {
     }
 
     @Override
-    public Forecast getActualWeatherFromProviderByCityId(Provider provider, long cityId)
-            throws URISyntaxException, IOException, ParseException {
-
-        City city = getCityById(cityId);
-        String link = createLinkFromProviderByCity(provider, city, true); //actual weather? = true
-
-        URI uri = new URI(link);
-        URL url = uri.toURL();
-
-        String json = NetUtils.urlToString(url);
-
-        return actualFactory.createActualModelFromJson(provider, cityId, json);
-    }
-
-    @Override
-    public List<String> getListSeparatedIdsByCityId(String date, long cityId)
+    public List<String> getListForecastIdsForDateByCityId(String date, long cityId)
             throws ForecastNotFoundInDBException {
         Map<Provider, List<Forecast>> mapByProviders = getAllForecastsByDateAndCityId(date, cityId)
                 .stream().collect(Collectors.groupingBy(Forecast::getProvider));
@@ -259,6 +249,20 @@ public class WeatherServiceImpl implements WeatherService {
         return allDateForecasts;
     }
 
+    private Forecast getActualWeatherFromProviderByCityId(Provider provider, long cityId)
+            throws URISyntaxException, IOException, ParseException {
+
+        City city = getCityById(cityId);
+        String link = createLinkFromProviderByCity(provider, city, true); //actual weather? = true
+
+        URI uri = new URI(link);
+        URL url = uri.toURL();
+
+        String json = NetUtils.urlToString(url);
+
+        return actualFactory.createActualModelFromJson(provider, cityId, json);
+    }
+
     private String createPairIds(String exceptionMessage, Map<String, List<Forecast>> map)
             throws ForecastNotFoundInDBException {//list.size() = 1 in map always!
 
@@ -276,15 +280,14 @@ public class WeatherServiceImpl implements WeatherService {
     private String createTemplateNoForecastsInDB(String date, long cityId) {
         City city = getCityById(cityId);
 
-        //1st %s = what was not found in DB (forecast, or actual weather, ot both)
-        //2nd %s = city,country
-        //3rd %s = date
         return String.format("There are no %s for %s from %s in DB. " +
                         "Please update database for this date before analysis.",
-                "%s", city.textNameCountry(), date);
+                "%s", //what was not found in DB (forecast, or actual weather, ot both)
+                city.textNameCountry(), //city,country
+                date); //date
     }
 
-    private List<Forecast> getNewForecastsFromProviderByCityId(Provider provider, long cityId)
+    private List<Forecast> getNewForecastsFromProvider(Provider provider, long cityId)
             throws URISyntaxException, IOException, ParseException, NoDataFromProviderException {
 
         City city = getCityById(cityId);
@@ -302,9 +305,9 @@ public class WeatherServiceImpl implements WeatherService {
                     city.textNameCountry(), provider.getName()));
         }
 
-        //foreca has 1 json for all forecasts and actual (and has limit )
-        if (provider == Provider.FORECA)
-            return createListForecastsAndActualFromForeca(json, cityId);
+        //some providers have 1 json for all forecasts and actual (and has limit for free connection)
+        if (provider.hasExpandedJson())
+            return createListForecastsForExpandedJson(provider, cityId, json);
 
         return forecastFactory.createListForecastsFromJsonByProvider(provider, cityId, json);
     }
@@ -317,36 +320,17 @@ public class WeatherServiceImpl implements WeatherService {
         return linkForecastsFactory.createLinkForecastsForProviderByCity(provider, city, actual);
     }
 
-    private List<Forecast> createListForecastsAndActualFromForeca(String json, long cityId)
+    private List<Forecast> createListForecastsForExpandedJson(Provider provider, long cityId, String json)
             throws ParseException, NoDataFromProviderException {
 
         List<Forecast> list = forecastFactory.createListForecastsFromJsonByProvider(
-                Provider.FORECA, cityId, json);
+                provider, cityId, json);
         list = saveListNewForecasts(list);
 
-        if (needUpdateActuals(Provider.FORECA, cityId)) {
-            Forecast actual = actualFactory.createActualModelFromJson(Provider.FORECA, cityId, json);
+        if (needUpdateActuals(provider, cityId)) {
+            Forecast actual = actualFactory.createActualModelFromJson(provider, cityId, json);
             saveNewForecast(actual);
             createAndSaveNewDiff(actual, cityId);
-        }
-        return list;
-    }
-
-    private List<Forecast> createListForecastsFromProviderByCityId(Provider provider, long cityId)
-            throws NoDataFromProviderException {
-        List<Forecast> list;
-        City city = getCityById(cityId);
-
-        try {
-            list = getNewForecastsFromProviderByCityId(provider, cityId);
-
-            if (provider != Provider.FORECA)
-                list = saveListNewForecasts(list);
-
-        } catch (Exception e) {
-            throw new NoDataFromProviderException(String.format(
-                    "There is no data for %s from provider %s",
-                    city.textNameCountry(), provider.name()));
         }
         return list;
     }

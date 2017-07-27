@@ -4,25 +4,15 @@ import ua.nick.weather.model.AverageDiff;
 import ua.nick.weather.model.Forecast;
 import ua.nick.weather.model.Provider;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
 public class CollectionsUtils {
 
-    public static Map<Provider, Long> createMapForecastsCount(Map<Provider, List<Forecast>> mapAllForecasts) {
-        Map<Provider, Long> forecastsCountByProviders = new HashMap<>();
+    public static Map<Provider, Long> createMapForecastsCount(List<Forecast> listForecasts) {
 
-        for (Provider provider : mapAllForecasts.keySet())
-            forecastsCountByProviders.put(provider, (long) mapAllForecasts.get(provider).size());
-
-        return forecastsCountByProviders;
-    }
-
-    public static Map<Provider, Long> createMapActualsCount(List<Forecast> listActuals) {
-
-        return listActuals.stream()
+        return listForecasts.stream()
                 .collect(Collectors.groupingBy(Forecast::getProvider, Collectors.counting()));
     }
 

@@ -114,11 +114,11 @@ public class ApplicationController {
             if (req.getParameter("reupdate") != null)
                 weatherService.deleteLastForecastsInDB(false, cityId);
 
-            Map<Provider, List<Forecast>> mapAllForecasts = weatherService.getAllNewForecasts(cityId);
+            List<Forecast> listForecasts = weatherService.getAllNewForecasts(cityId);
 
             City city = userService.getCityById(cityId);
-            message = StringUtils.createMessageAboutUpdateForecasts(
-                    CollectionsUtils.createMapForecastsCount(mapAllForecasts), city);
+            message = StringUtils.createMessageAboutForecasts(
+                    CollectionsUtils.createMapForecastsCount(listForecasts), city);
 
         } catch (Exception e) {
             message = e.getMessage();
@@ -143,11 +143,11 @@ public class ApplicationController {
             if (req.getParameter("reupdate") != null)
                 weatherService.deleteLastForecastsInDB(true, cityId);
 
-            List<Forecast> listAllActuals = weatherService.getAllNewActuals(cityId);
+            List<Forecast> listActuals = weatherService.getAllNewActuals(cityId);
 
             City city = userService.getCityById(cityId);
-            message = StringUtils.createMessageAboutUpdateForecasts(
-                    CollectionsUtils.createMapActualsCount(listAllActuals), city);
+            message = StringUtils.createMessageAboutActuals(
+                    CollectionsUtils.createMapForecastsCount(listActuals), city);
 
         } catch (Exception e) {
             message = e.getMessage();
@@ -166,7 +166,7 @@ public class ApplicationController {
         model.addAttribute("date", date);
 
         try {
-            String ids = weatherService.getListSeparatedIdsByCityId(date, cityId).stream()
+            String ids = weatherService.getListForecastIdsForDateByCityId(date, cityId).stream()
                     .collect(Collectors.joining(";"));
             resp.getWriter().print(ids);
 

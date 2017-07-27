@@ -11,7 +11,8 @@ public enum Provider {
             "small_openweathermap_logo.png",
             "row_openweathermap_logo.png",
             "#ebea2f",
-            7
+            7,
+            false
     ),
 
     WUNDERGROUND(
@@ -20,7 +21,8 @@ public enum Provider {
             "small_wu_logo.png",
             "row_wu_logo.png",
             "#9d9ad1",
-            4
+            4,
+            false
     ),
 
     FORECA(
@@ -29,7 +31,8 @@ public enum Provider {
             "small_foreca_logo.png",
             "row_foreca_logo.png",
             "#29bfe4",
-            10
+            10,
+            true
     ),
 
     DARK_SKY(
@@ -38,7 +41,8 @@ public enum Provider {
             "small_darksky_logo.png",
             "row_darksky_logo.png",
             "#29e45c",
-            8
+            8,
+            false
     )/*,
 
     APIXU(
@@ -63,17 +67,20 @@ public enum Provider {
     private String rowLogo;
     private String color;
     private int maxDaysForecast;
+    private boolean expandedJson;
 
     Provider() {
     }
 
-    Provider(String linkForecast, String linkActual, String logo, String rowLogo, String color, int maxDaysForecast) {
+    Provider(String linkForecast, String linkActual, String logo, String rowLogo, String color,
+             int maxDaysForecast, boolean expandedJson) {
         this.linkForecast = linkForecast;
         this.linkActual = linkActual;
         this.logo = logo;
         this.rowLogo = rowLogo;
         this.color = color;
         this.maxDaysForecast = maxDaysForecast;
+        this.expandedJson = expandedJson;
     }
 
     public int getNumber() {
@@ -106,6 +113,11 @@ public enum Provider {
 
     public int getMaxDaysForecast() {
         return maxDaysForecast;
+    }
+
+    //some providers have 1 json for all forecasts and actual (and has limit for free connection)
+    public boolean hasExpandedJson() {
+        return expandedJson;
     }
 
     public static List<Provider> getAll() {

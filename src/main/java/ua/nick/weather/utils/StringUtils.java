@@ -32,29 +32,6 @@ public class StringUtils {
         return date;
     }
 
-    public static String createMessageAboutUpdateForecasts(Map<Provider, Long> map, City city) {
-
-        if (map != null && map.keySet().size() > 0) {
-            Long total = map.values().stream()
-                    .filter(count -> count != null)
-                    .reduce((n1, n2) -> n1 + n2).orElse(0L);
-
-            String countedByProviders = map.keySet().stream()
-                    .map(provider -> "</br>" + map.get(provider) + " from " + provider)
-                    .collect(Collectors.joining());
-
-            if (total > 0)
-                return String.format("New %s forecast(s) for %s, %s were added to database:%s",
-                        total,
-                        city.getName(),
-                        city.getCountry(),
-                        countedByProviders);
-        }
-
-        return String.format("There is no need to update forecasts for %s, %s from providers for this date. " +
-                "</br>Try tomorrow or re-update data.", city.getName(), city.getCountry());
-    }
-
     public static String createMessageAboutUpdateAverageDiff(List<AverageDiff> list) {
 
         if (list != null && list.size() > 0) {
@@ -74,4 +51,50 @@ public class StringUtils {
         }
         return "There is no need to update average differences for any providers.";
     }
+
+    public static String createMessageAboutForecasts(Map<Provider, Long> map, City city) {
+        if (map != null && !map.keySet().isEmpty()) {
+            String baseMessage = String.format(createBaseUpdatedMessage(map, city), "forecast(s)");
+
+            //add message about providers with expanded json
+            String addingMessage = "</br></br>Additionally added:";
+            for (Provider provider : map.keySet())
+                if (provider.hasExpandedJson())
+                    addingMessage += "</br> 1 actual weather from " + provider;
+
+            return baseMessage + addingMessage;
+        }
+        return createNoUpdatedMessage(city);
+    }
+
+    public static String createMessageAboutActuals(Map<Provider, Long> map, City city) {
+
+        if (map != null && !map.keySet().isEmpty())
+            return String.format(createBaseUpdatedMessage(map, city), "actual weather(s)");
+
+        return createNoUpdatedMessage(city);
+    }
+
+    private static String createBaseUpdatedMessage(Map<Provider, Long> map, City city) {
+
+        Long total = map.values().stream()
+                .filter(count -> count != null)
+                .reduce((n1, n2) -> n1 + n2).orElse(0L);
+
+        String countedByProviders = map.keySet().stream()
+                .map(provider -> "</br>" + map.get(provider) + " from " + provider)
+                .collect(Collectors.joining());
+
+        return String.format("New %s %s for %s were added to database:%s",
+                total, //quantity items
+                "%s", //forecasts or actuals
+                city.textNameCountry(), //city
+                countedByProviders); //list forecasts
+    }
+
+    private static String createNoUpdatedMessage(City city) {
+        return String.format("There is no need to update forecasts for %s from providers for this date. " +
+                "</br>Try tomorrow or re-update data.", city.textNameCountry());
+    }
+
 }

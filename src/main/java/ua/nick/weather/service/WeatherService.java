@@ -21,13 +21,13 @@ public interface WeatherService {
     void saveNewForecast(Forecast forecast);
     Forecast getForecastById(Long id);
 
-    Map<Provider, List<Forecast>> getAllNewForecasts(long cityId)
+    List<Forecast> getAllNewForecasts(long cityId)
             throws IOException, URISyntaxException, ParseException, NoDataFromProviderException;
     List<Forecast> getAllNewActuals(long cityId)
             throws IOException, URISyntaxException, ParseException;
-    Forecast getActualWeatherFromProviderByCityId(Provider provider, long cityId)
-            throws URISyntaxException, IOException, ParseException;
-    List<String> getListSeparatedIdsByCityId(String date, long cityId)
+    /*Forecast getActualWeatherFromProviderByCityId(Provider provider, long cityId)
+            throws URISyntaxException, IOException, ParseException;*/
+    List<String> getListForecastIdsForDateByCityId(String date, long cityId)
             throws ForecastNotFoundInDBException;
 
     void saveNewDiff(Diff diff);
