@@ -7,10 +7,7 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
-import ua.nick.weather.model.AverageDiff;
-import ua.nick.weather.model.City;
-import ua.nick.weather.model.Forecast;
-import ua.nick.weather.model.Provider;
+import ua.nick.weather.model.*;
 import ua.nick.weather.modelTester.TesterAverage;
 import ua.nick.weather.modelTester.TesterItem;
 import ua.nick.weather.service.UserService;
@@ -78,16 +75,19 @@ public class ApplicationController {
         LocalDate dateStart = today.minusDays(7);
         LocalDate dateEnd = today.plusDays(7);
 
+        //for the page "previous 7 days"
         model.addAttribute("listDiffs",
                 weatherService.createListDiffsForPeriodByCityId(dateStart, today, cityId));
         model.addAttribute("datesPrev",
                 weatherService.createListStringDatesOfPeriod(dateStart, today));
 
+        //for the page "next 7 days"
         model.addAttribute("mapForecasts",
                 weatherService.createMapProviderForecastsForPeriodByCityId(today, dateEnd, cityId));
         model.addAttribute("datesNext",
                 weatherService.createListStringDatesOfPeriod(today, dateEnd));
 
+        //for the page "rating providers"
         List<AverageDiff> averages = CollectionsUtils.sortList(
                 weatherService.getAllAverageDiffsByCityId(cityId));
         model.addAttribute("listAverages", averages);
@@ -157,10 +157,12 @@ public class ApplicationController {
 
     @RequestMapping(value = "/forecasts/find/ids", method = RequestMethod.GET)
     public void findForecastIdsByDay(@RequestParam("cityid") long cityId,
+                                     @RequestParam("date") String date,
                                     HttpServletRequest req, HttpServletResponse resp, Model model)
                                     throws IOException {
 
-        String date = StringUtils.changeDateByIndex(req.getParameter("date"), req.getParameter("index"));
+        String index = req.getParameter("index");
+        date = index != null ? StringUtils.changeDateByIndex(date, index) : date ;
         model.addAttribute("date", date);
 
         try {
@@ -175,21 +177,19 @@ public class ApplicationController {
 
     @RequestMapping(value = {"/forecasts/show/day"}, method = RequestMethod.GET)
     public String showForecastsByDate(@RequestParam("cityid") long cityId,
-                                      HttpServletRequest req, Model model)
-                                        throws IOException {
+                                      @RequestParam("date") String date,
+                                      @RequestParam("ids") String ids,
+                                      Model model) throws IOException {
+        model.addAttribute("date", date);
 
         City city = userService.getCityById(cityId);
         model.addAttribute("city", city);
 
-        String ids = req.getParameter("ids"); //ids=1,2;3,4;5,6;...
-        String date = weatherService.getForecastById(Long.parseLong(ids.split(",")[1].split(";")[0])).getDate();
-        model.addAttribute("date", date);
-
         List<TesterAverage> averageTesters = weatherService.createListAverageTesters(date, cityId);
-        Map<Provider, List<TesterItem>> mapItemTesters = weatherService.createMapItemTesters(ids);
-
-        model.addAttribute("mapItemTester", mapItemTesters);
         model.addAttribute("listAverageTester", averageTesters);
+
+        Map<Provider, List<TesterItem>> mapItemTesters = weatherService.createMapItemTesters(ids);
+        model.addAttribute("mapItemTester", mapItemTesters);
 
         return "day_tester";
     }

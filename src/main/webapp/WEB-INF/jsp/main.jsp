@@ -357,11 +357,12 @@
                 cityid:cityid
             }
         }).success(function (resp) {
-            if (resp.indexOf(";") == -1) {
-                openModalWithoutUpdate("Error getting info:", resp);
+            if (resp.indexOf(";") != -1) {
+                window.location.assign("${contextPath}/forecasts/show/day?date=" + date +
+                        "&cityid=" + cityid +
+                        "&ids=" + resp);
             } else {
-                window.location.assign("${contextPath}/forecasts/show/day?cityid=" + cityid
-                        + "&ids=" + resp);
+                openModalWithoutUpdate("Error getting info:", resp);
             }
         }).error(function (resp) {
             openModalWithoutUpdate("Error getting info:", resp);

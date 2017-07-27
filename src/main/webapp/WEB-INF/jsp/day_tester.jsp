@@ -168,8 +168,9 @@
                 $("#openModal").modal('show');
 
             } else {
-                window.location.assign("${contextPath}/forecasts/show/day?cityid=" + cityId
-                        + "&ids=" + resp);
+                window.location.assign("${contextPath}/forecasts/show/day?date" + date +
+                        "cityid=" + cityId +
+                        "&ids=" + resp);
             }
 
         }).error(function (resp) {
