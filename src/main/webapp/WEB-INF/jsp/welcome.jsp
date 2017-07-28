@@ -3,6 +3,7 @@
 
 <c:set var="contextPath" value="${pageContext.request.contextPath}"/>
 <c:set var="message" value="${message}"/>
+<c:set var="cities" value="${cities}"/>
 
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
 
@@ -37,9 +38,12 @@
     <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyD-KmQUcMJUpRzjthK1CvNtmYw3mLf9vzs&libraries=places&callback=initAutocomplete"
             async defer></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/js-cookie/2.1.0/js.cookie.js"></script>
+    <script src="http://netdna.bootstrapcdn.com/bootstrap/3.0.0/js/bootstrap.min.js"></script>
+    <script src="http://netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap.min.css"></script>
 </head>
 
 <body>
+
 <div class="container">
     <div class="alert alert-danger alert-dismissable fade in" id="message">
         <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
@@ -77,32 +81,51 @@
         </div>
     </div>
 
-    <div class="search">
-        <p><strong>Enter your city: </strong>
-            <input id="pac-input" class="controls" type="text" placeholder="Your city">
-        </p>
-        <p><strong>&</strong></p>
-        <p>
-            <button id="testWeather" type="button" class="btn" onclick="getCity()"
-                    data-toggle="tooltip" title="Click for analyse weather for this place">
-                <strong>test weather</strong>
-            </button>
-        </p>
+    <div id="wrapper" class="">
+        <%--open side panel with list cities--%>
+        <div id="sidebar-wrapper">
+            <ul class="sidebar-nav">
+                <li class="sidebar-brand">
+                    <a href="#">List of cities already tested:</a>
+                </li>
 
-        <%--<p>
-            <button type="button" class="btn btn-sm btn-primary" onclick="openSidePanel()">Open list of cities
-                <br>
-                <small>already tested</small>
-            </button>
-        </p>--%>
+                <c:forEach items="${cities}" var="textCity" varStatus="loop">
+                    <li><a href="#" onclick="takeCity('${textCity}')">${textCity}</a></li>
+                </c:forEach>
+            </ul>
+        </div>
+
+        <div id="page-content-wrapper">
+            <div class="container-fluid">
+                <div class="search">
+                    <p><strong>Enter your city: </strong>
+                        <input id="pac-input" class="controls" type="text" placeholder="Your city">
+                    </p>
+                    <p><strong>&</strong></p>
+                    <p>
+                        <button id="testWeather" type="button" class="btn" onclick="getCity()"
+                                data-toggle="tooltip" title="Click for analyse weather for this place">
+                            <strong>test weather</strong>
+                        </button>
+                    </p>
+                    <p>
+                        <button href="#menu-toggle" class="btn btn-default" id="menu-toggle">Open list of cities
+                            <br>
+                            <small>already tested</small>
+                        </button>
+                    </p>
+                </div>
+            </div>
+        </div>
     </div>
-
 </div>
+
 </body>
 </html>
 
 <script>
     isOnline();
+
     $(document).ready(function(){
         setTimeout(function(){
             if(!Cookies.get('modalShown')) {
@@ -136,6 +159,7 @@
             }
         });
     }
+
     function openMain(city, lat, lng) {
         var latRound = roundDouble(lat, 4);
         var lngRound = roundDouble(lng, 4);
@@ -154,6 +178,12 @@
         })
     }
 
+    function roundDouble(num, signs) {
+        return Math.round(num * 10 * signs) / (10 * signs);
+    }
+
+
+<%--for message "check internet connection"--%>
     function isOnline() {
         var request = new XMLHttpRequest();
         request.open("GET", "https://httpbin.org/", true);
@@ -163,9 +193,19 @@
         };
         request.send();
     }
+</script>
 
-    function roundDouble(num, signs) {
-        return Math.round(num * 10 * signs) / (10 * signs);
+<%--panel with list cities--%>
+<script>
+    $("#wrapper").toggleClass("toggled");
+    $("#menu-toggle").click(function(e) {
+        e.preventDefault();
+        $("#wrapper").toggleClass("toggled");
+    });
+
+    function takeCity(textCity) {
+        document.getElementById('pac-input').value = textCity;
+        $("#wrapper").toggleClass("toggled");
     }
 </script>
 
@@ -192,5 +232,191 @@
     .alert{
         display: none;
     }
+
+    /*for side panel*/
+    /* Always set the map height explicitly to define the size of the div
+       * element that contains the map. */
+
+    .as-header-wrapper{
+        overflow-x: hidden;
+    }
+    /*!
+     * Start Bootstrap - Simple Sidebar HTML Template (http://startbootstrap.com)
+     * Code licensed under the Apache License v2.0.
+     * For details, see http://www.apache.org/licenses/LICENSE-2.0.
+     */
+
+    /* Toggle Styles */
+    #wrapper {
+        padding-left: 0;
+        -webkit-transition: all 0.5s ease;
+        -moz-transition: all 0.5s ease;
+        -o-transition: all 0.5s ease;
+        transition: all 0.5s ease;
+    }
+    #wrapper.toggled {
+        padding-left: 250px;
+    }
+    #sidebar-wrapper {
+        z-index: 1000;
+        position: fixed;
+        left: 250px;
+        width: 0;
+        height: 100%;
+        margin-left: -250px;
+        overflow-y: auto;
+        background: #000;
+        -webkit-transition: all 0.5s ease;
+        -moz-transition: all 0.5s ease;
+        -o-transition: all 0.5s ease;
+        transition: all 0.5s ease;
+    }
+    #wrapper.toggled #sidebar-wrapper {
+        width: 250px;
+    }
+    #page-content-wrapper {
+        width: 100%;
+        position: absolute;
+        padding: 15px;
+    }
+    #wrapper.toggled #page-content-wrapper {
+        position: absolute;
+        margin-right: -250px;
+    }
+    /* Sidebar Styles */
+    .sidebar-nav {
+        position: absolute;
+        top: 0;
+        width: 250px;
+        margin: 0;
+        padding: 0;
+        list-style: none;
+    }
+    .sidebar-nav li {
+        text-indent: 20px;
+        line-height: 40px;
+    }
+    .sidebar-nav li a {
+        display: block;
+        text-decoration: none;
+        color: #999999;
+    }
+    .sidebar-nav li a:hover {
+        text-decoration: none;
+        color: #fff;
+        background: rgba(255, 255, 255, 0.2);
+    }
+    .sidebar-nav li a:active, .sidebar-nav li a:focus {
+        text-decoration: none;
+    }
+    .sidebar-nav > .sidebar-brand {
+        height: 65px;
+        font-size: 18px;
+        line-height: 60px;
+    }
+    .sidebar-nav > .sidebar-brand a {
+        color: #999999;
+    }
+    .sidebar-nav > .sidebar-brand a:hover {
+        color: #fff;
+        background: none;
+    }
+    @media(min-width:768px) {
+        #wrapper {
+            padding-left: 250px;
+        }
+        #wrapper.toggled {
+            padding-left: 0;
+        }
+        #sidebar-wrapper {
+            width: 250px;
+        }
+        #wrapper.toggled #sidebar-wrapper {
+            width: 0;
+        }
+        #page-content-wrapper {
+            padding: 20px;
+            position: relative;
+        }
+        #wrapper.toggled #page-content-wrapper {
+            position: relative;
+            margin-right: 0;
+        }
+    }
+
+    #map {
+        height: 100%;
+    }
+    /* Optional: Makes the sample page fill the window. */
+    html, body {
+        height: 100%;
+        margin: 0;
+        padding: 0;
+    }
+
+    #infowindow-content .title {
+        font-weight: bold;
+    }
+
+    #infowindow-content {
+        display: none;
+    }
+
+    #map #infowindow-content {
+        display: inline;
+    }
+
+    /*.pac-card {
+        margin: 10px 10px 0 0;
+        border-radius: 2px 0 0 2px;
+        box-sizing: border-box;
+        -moz-box-sizing: border-box;
+        outline: none;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+        background-color: #fff;
+        font-family: Roboto;
+    }
+
+    #pac-container {
+        padding-bottom: 12px;
+        margin-right: 12px;
+    }
+
+    .pac-controls {
+        display: inline-block;
+        padding: 5px 11px;
+    }
+
+    .pac-controls label {
+        font-family: Roboto;
+        font-size: 13px;
+        font-weight: 300;
+    }
+
+    #pac-input {
+        background-color: #fff;
+        font-family: Roboto;
+        font-size: 15px;
+        font-weight: 300;
+        margin-left: 12px;
+        padding: 0 11px 0 13px;
+        text-overflow: ellipsis;
+        width: 400px;
+    }
+
+    #pac-input:focus {
+        border-color: #4d90fe;
+    }
+
+    #title {
+        color: #fff;
+        background-color: #4d90fe;
+        font-size: 25px;
+        font-weight: 500;
+        padding: 6px 12px;
+    }
+    #target {
+        width: 345px;
+    }*/
 
 </style>

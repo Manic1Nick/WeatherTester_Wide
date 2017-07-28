@@ -154,11 +154,23 @@
 
     function changeDay(date, index) {
         $.ajax({
+            url: '${contextPath}/change/day',
+            type: 'GET',
+            data: {
+                date : date,
+                index: index
+            }
+        }).success(function (newDate) {
+            openNewDay(newDate);
+        })
+    }
+
+    function openNewDay(date) {
+        $.ajax({
             url: '${contextPath}/forecasts/find/ids',
             type: 'GET',
             data: {
                 date : date,
-                index: index,
                 cityid: cityId
             }
         }).success(function (resp) {
@@ -168,8 +180,8 @@
                 $("#openModal").modal('show');
 
             } else {
-                window.location.assign("${contextPath}/forecasts/show/day?date" + date +
-                        "cityid=" + cityId +
+                window.location.assign("${contextPath}/forecasts/show/day?date=" + date +
+                        "&cityid=" + cityId +
                         "&ids=" + resp);
             }
 

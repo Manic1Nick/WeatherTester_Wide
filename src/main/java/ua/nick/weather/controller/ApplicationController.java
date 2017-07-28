@@ -48,6 +48,9 @@ public class ApplicationController {
             return "main";
         }
 
+        List<String> cities = userService.getAllCitiesNames();
+        model.addAttribute("cities", cities);
+
         //if user with city unregistered we get choice city in welcome.jsp
         return "welcome";
     }
@@ -155,16 +158,21 @@ public class ApplicationController {
         resp.getWriter().print(message);
     }
 
+    @RequestMapping(value = "/change/day", method = RequestMethod.GET)
+    public void changeDay(@RequestParam("date") String date,
+                          @RequestParam("index") String index,
+                          HttpServletResponse resp)
+                                throws IOException {
+
+        date = index != null ? StringUtils.changeDateByIndex(date, index) : date ;
+        resp.getWriter().print(date);
+    }
+
     @RequestMapping(value = "/forecasts/find/ids", method = RequestMethod.GET)
     public void findForecastIdsByDay(@RequestParam("cityid") long cityId,
                                      @RequestParam("date") String date,
                                     HttpServletRequest req, HttpServletResponse resp, Model model)
                                     throws IOException {
-
-        String index = req.getParameter("index");
-        date = index != null ? StringUtils.changeDateByIndex(date, index) : date ;
-        model.addAttribute("date", date);
-
         try {
             String ids = weatherService.getListForecastIdsForDateByCityId(date, cityId).stream()
                     .collect(Collectors.joining(";"));

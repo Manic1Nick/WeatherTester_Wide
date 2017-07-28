@@ -5,6 +5,9 @@ import org.springframework.stereotype.Service;
 import ua.nick.weather.model.City;
 import ua.nick.weather.repository.CityRepository;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 @Service(value = "userService")
 public class UserServiceImpl implements UserService {
 
@@ -49,13 +52,18 @@ public class UserServiceImpl implements UserService {
         return city;
     }
 
+    @Override
+    public List<String> getAllCitiesNames() {
+        List<City> cities = cityRepository.findAll();
+
+        return cities.stream().map(City::textNameCountry).collect(Collectors.toList());
+    }
+
     private City parsePlace(String cityText, Double lat, Double lng) {
         String[] cityArray = cityText.split(",");
         String name = cityArray[0].trim();
         String country = cityArray[cityArray.length - 1].trim();
 
-        City city = new City(name, country, lat, lng);
-
-        return city;
+        return new City(name, country, lat, lng);
     }
 }

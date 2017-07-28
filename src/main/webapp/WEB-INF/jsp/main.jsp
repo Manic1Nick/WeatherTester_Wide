@@ -65,14 +65,12 @@
             Change city
         </a>
 
-        <%--
-        <p>
+        <%--<p>
             <a href="${contextPath}/forecasts/get/all">Get total analysis</a>
         </p>
         <p>
             <a href="#" onclick="updateAverageDiffForAllDays()">Update all average diffs (for admin)</a>
-        </p>
-        --%>
+        </p>--%>
     </div>
 
     <div id="actions">
