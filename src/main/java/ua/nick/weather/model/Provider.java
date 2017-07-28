@@ -124,5 +124,15 @@ public enum Provider {
         return Arrays.asList(values());
     }
 
+    public static int lengthAll() {
+        return values().length;
+    }
 
+    public static int lengthWithoutExpandedJson() {
+        int count = 0;
+        for (Provider provider : Arrays.asList(values()))
+            count += provider.hasExpandedJson() ? 0 : 1 ;
+
+        return count;
+    }
 }

@@ -53,26 +53,37 @@ public class StringUtils {
     }
 
     public static String createMessageAboutForecasts(Map<Provider, Long> map, City city) {
-        if (map != null && !map.keySet().isEmpty()) {
-            String baseMessage = String.format(createBaseUpdatedMessage(map, city), "forecast(s)");
 
-            //add message about providers with expanded json
-            String addingMessage = "</br></br>Additionally added:";
-            for (Provider provider : map.keySet())
-                if (provider.hasExpandedJson())
-                    addingMessage += "</br> 1 actual weather from " + provider;
+        if (map == null || map.keySet().isEmpty())
+            return createNoUpdatedMessage(city);
 
-            return baseMessage + addingMessage;
-        }
-        return createNoUpdatedMessage(city);
+        String baseMessage = String.format(createBaseUpdatedMessage(map, city), "forecast(s)");
+
+        //add message about providers with expanded json
+        String addingMessage = "</br></br>Additionally added:";
+        for (Provider provider : map.keySet())
+            if (provider.hasExpandedJson())
+                addingMessage += "</br> 1 actual weather from " + provider;
+
+        String errorMessage = "";
+        if (map.keySet().size() < Provider.lengthAll())
+            errorMessage = createErrorUpdatedMessage(map);
+
+        return baseMessage + addingMessage + errorMessage;
     }
 
     public static String createMessageAboutActuals(Map<Provider, Long> map, City city) {
 
-        if (map != null && !map.keySet().isEmpty())
-            return String.format(createBaseUpdatedMessage(map, city), "actual weather(s)");
+        if (map == null || map.keySet().isEmpty())
+            return createNoUpdatedMessage(city);
 
-        return createNoUpdatedMessage(city);
+        String baseMessage = String.format(createBaseUpdatedMessage(map, city), "actual weather(s)");
+
+        String errorMessage = "";
+        if (map.keySet().size() < Provider.lengthWithoutExpandedJson())
+            errorMessage = createErrorUpdatedMessage(map);
+
+        return baseMessage + errorMessage;
     }
 
     private static String createBaseUpdatedMessage(Map<Provider, Long> map, City city) {
@@ -95,6 +106,17 @@ public class StringUtils {
     private static String createNoUpdatedMessage(City city) {
         return String.format("There is no need to update forecasts for %s from providers for this date. " +
                 "</br>Try tomorrow or re-update data.", city.textNameCountry());
+    }
+
+    private static String createErrorUpdatedMessage(Map<Provider, Long> map) {
+        String listErrorUpdated = "";
+
+        for (Provider provider : Provider.values())
+            if (!map.keySet().contains(provider))
+                listErrorUpdated += "<br/>" + provider.getName();
+
+        return String.format("</br></br>Error getting data from provider(s):%s<br/>Try connect later",
+                listErrorUpdated);
     }
 
 }

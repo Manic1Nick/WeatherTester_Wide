@@ -3,7 +3,6 @@ package ua.nick.weather.service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ua.nick.weather.exception.ForecastNotFoundInDBException;
-import ua.nick.weather.exception.NoDataFromProviderException;
 import ua.nick.weather.model.*;
 import ua.nick.weather.modelTester.TesterAverage;
 import ua.nick.weather.modelTester.TesterItem;
@@ -60,15 +59,14 @@ public class WeatherServiceImpl implements WeatherService {
     }
 
     @Override
-    public List<Forecast> getAllNewForecasts(long cityId)
-            throws IOException, URISyntaxException, ParseException, NoDataFromProviderException {
+    public List<Forecast> getAllNewForecasts(long cityId) {
         List<Forecast> allForecasts = new ArrayList<>();
 
         for (Provider provider : Provider.values())
             if (needUpdateForecasts(provider, cityId)) {
                 List<Forecast> list = getNewForecastsFromProvider(provider, cityId);
 
-                if (!provider.hasExpandedJson())
+                if (!list.isEmpty() && !provider.hasExpandedJson())
                     list = saveListNewForecasts(list);
 
                 allForecasts.addAll(list);
@@ -287,29 +285,30 @@ public class WeatherServiceImpl implements WeatherService {
                 date); //date
     }
 
-    private List<Forecast> getNewForecastsFromProvider(Provider provider, long cityId)
-            throws URISyntaxException, IOException, ParseException, NoDataFromProviderException {
+    private List<Forecast> getNewForecastsFromProvider(Provider provider, long cityId) {
+        List<Forecast> forecasts = new ArrayList<>();
 
-        City city = getCityById(cityId);
-        String link = createLinkFromProviderByCity(provider, city, false); //actual weather? = false
-
-        URI uri = new URI(link);
-        URL url = uri.toURL();
-
-        String json;
         try {
-            json = NetUtils.urlToString(url);
+            City city = getCityById(cityId);
+            String link = createLinkFromProviderByCity(provider, city, false); //actual weather? = false
+
+            URI uri = new URI(link);
+            URL url = uri.toURL();
+            String json = NetUtils.urlToString(url);
+
+            //some providers have 1 json for all forecasts and actual (and has limit for free connection)
+            if (provider.hasExpandedJson())
+                return createListForecastsForExpandedJson(provider, cityId, json);
+
+            forecasts = forecastFactory.createListForecastsFromJsonByProvider(provider, cityId, json);
+
         } catch (Exception e) {
-            throw new NoDataFromProviderException(String.format(
+            e.printStackTrace();
+            /*throw new NoDataFromProviderException(String.format(
                     "Error getting data for %s from provider %s. Try connect later",
-                    city.textNameCountry(), provider.getName()));
+                    city.textNameCountry(), provider.getName()));*/
         }
-
-        //some providers have 1 json for all forecasts and actual (and has limit for free connection)
-        if (provider.hasExpandedJson())
-            return createListForecastsForExpandedJson(provider, cityId, json);
-
-        return forecastFactory.createListForecastsFromJsonByProvider(provider, cityId, json);
+        return forecasts;
     }
 
     private City getCityById(long cityId) {
@@ -320,28 +319,30 @@ public class WeatherServiceImpl implements WeatherService {
         return linkForecastsFactory.createLinkForecastsForProviderByCity(provider, city, actual);
     }
 
-    private List<Forecast> createListForecastsForExpandedJson(Provider provider, long cityId, String json)
-            throws ParseException, NoDataFromProviderException {
+    private List<Forecast> createListForecastsForExpandedJson(Provider provider, long cityId, String json) {
+        List<Forecast> forecasts = new ArrayList<>();
 
-        List<Forecast> list = forecastFactory.createListForecastsFromJsonByProvider(
-                provider, cityId, json);
-        list = saveListNewForecasts(list);
+        try {
+            forecasts = forecastFactory.createListForecastsFromJsonByProvider(provider, cityId, json);
+            forecasts = saveListNewForecasts(forecasts);
 
-        if (needUpdateActuals(provider, cityId)) {
-            Forecast actual = actualFactory.createActualModelFromJson(provider, cityId, json);
-            saveNewForecast(actual);
-            createAndSaveNewDiff(actual, cityId);
+            if (needUpdateActuals(provider, cityId)) {
+                Forecast actual = actualFactory.createActualModelFromJson(provider, cityId, json);
+                saveNewForecast(actual);
+                createAndSaveNewDiff(actual, cityId);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
-        return list;
+
+        return forecasts;
     }
 
-    private List<Forecast> saveListNewForecasts(List<Forecast> list)
-            throws NoDataFromProviderException {
+    private List<Forecast> saveListNewForecasts(List<Forecast> list) {
 
         list = validateNewForecasts(list);
-        if (!list.isEmpty())
-            for (Forecast forecast : list)
-                saveNewForecast(forecast);
+        for (Forecast forecast : list)
+            saveNewForecast(forecast);
 
         return list;
     }

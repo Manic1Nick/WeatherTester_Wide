@@ -88,15 +88,22 @@
                 <strong>test weather</strong>
             </button>
         </p>
+
+        <%--<p>
+            <button type="button" class="btn btn-sm btn-primary" onclick="openSidePanel()">Open list of cities
+                <br>
+                <small>already tested</small>
+            </button>
+        </p>--%>
     </div>
+
 </div>
 </body>
 </html>
 
 <script>
+    isOnline();
     $(document).ready(function(){
-        isOnline();
-
         setTimeout(function(){
             if(!Cookies.get('modalShown')) {
                 $("#openModal").modal('show');
@@ -115,8 +122,6 @@
         var searchBox = new google.maps.places.SearchBox(place);
     }
     function getCity() {
-        isOnline();
-
         var city = place.value;
         var lat, lng;
         var geocoder = new google.maps.Geocoder();
