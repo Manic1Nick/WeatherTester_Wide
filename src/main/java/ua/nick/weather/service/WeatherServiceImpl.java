@@ -49,16 +49,6 @@ public class WeatherServiceImpl implements WeatherService {
     private LinkForecastsFactory linkForecastsFactory;
 
     @Override
-    public void saveNewForecast(Forecast forecast) {
-        forecastRepository.save(forecast);
-    }
-
-    @Override
-    public Forecast getForecastById(Long id) {
-        return forecastRepository.findById(id);
-    }
-
-    @Override
     public List<Forecast> getAllNewForecasts(long cityId) {
         List<Forecast> allForecasts = new ArrayList<>();
 
@@ -98,23 +88,29 @@ public class WeatherServiceImpl implements WeatherService {
         Map<Provider, List<Forecast>> mapByProviders = getAllForecastsByDateAndCityId(date, cityId)
                 .stream().collect(Collectors.groupingBy(Forecast::getProvider));
 
-        String exceptionMessage = createTemplateNoForecastsInDB(date, cityId);
-
         //create text line of ids pairs "forecast,actual" ("1,2;3,4;...)
-        List<String> listIds = new ArrayList<>();
-        Map<String, List<Forecast>> pair;
-        for (List<Forecast> list : mapByProviders.values()) {
-            if (list.size() == 2) {
-                pair = list.stream().collect(Collectors.groupingBy(Forecast::forecastOrActual));
-                listIds.add(createPairIds(exceptionMessage, pair));
-            }
-        }
+        List<String> listIds = createListOfPairIds(mapByProviders);
 
-        if (listIds.isEmpty())
+        if (listIds.isEmpty()) {
+            String exceptionMessage = createTemplateNoForecastsInDB(date, cityId);
             throw new ForecastNotFoundInDBException(String.format(exceptionMessage,
-                            "any forecasts or any actuals weather"));
-
+                    "any forecasts or any actuals weather"));
+        }
         return listIds;
+    }
+
+    @Override
+    public Map<Provider, List<Forecast>> getListForecastsForDateByCityId(String date, long cityId)
+            throws ForecastNotFoundInDBException {
+        Map<Provider, List<Forecast>> mapByProviders = getAllForecastsByDateAndCityId(date, cityId)
+                .stream().collect(Collectors.groupingBy(Forecast::getProvider));
+
+        String exceptionMessage = createTemplateNoForecastsInDB(date, cityId);
+        if (mapByProviders == null || mapByProviders.isEmpty())
+            throw new ForecastNotFoundInDBException(String.format(exceptionMessage,
+                    "any forecasts or any actuals weather"));
+
+        return mapByProviders;
     }
 
     @Override
@@ -227,6 +223,14 @@ public class WeatherServiceImpl implements WeatherService {
         return averageItems;
     }*/
 
+    private void saveNewForecast(Forecast forecast) {
+        forecastRepository.save(forecast);
+    }
+
+    private Forecast getForecastById(Long id) {
+        return forecastRepository.findById(id);
+    }
+
     private List<Forecast> getAllForecastsByProviderAndCityId(Provider provider, boolean actual, long cityId) {
         return forecastRepository.findByProviderAndActualAndCityId(provider, actual, cityId);
     }
@@ -261,20 +265,6 @@ public class WeatherServiceImpl implements WeatherService {
         return actualFactory.createActualModelFromJson(provider, cityId, json);
     }
 
-    private String createPairIds(String exceptionMessage, Map<String, List<Forecast>> map)
-            throws ForecastNotFoundInDBException {//list.size() = 1 in map always!
-
-        List<Forecast> forecast = map.get("forecast");
-        List<Forecast> actual = map.get("actual");
-
-        if (forecast == null)
-            throw new ForecastNotFoundInDBException(String.format(exceptionMessage, "forecast"));
-        else if (actual == null)
-            throw new ForecastNotFoundInDBException(String.format(exceptionMessage, "actual weather"));
-
-        return forecast.get(0).getId().toString() + "," + actual.get(0).getId().toString();
-    }
-
     private String createTemplateNoForecastsInDB(String date, long cityId) {
         City city = getCityById(cityId);
 
@@ -304,9 +294,6 @@ public class WeatherServiceImpl implements WeatherService {
 
         } catch (Exception e) {
             e.printStackTrace();
-            /*throw new NoDataFromProviderException(String.format(
-                    "Error getting data for %s from provider %s. Try connect later",
-                    city.textNameCountry(), provider.getName()));*/
         }
         return forecasts;
     }
@@ -347,6 +334,20 @@ public class WeatherServiceImpl implements WeatherService {
         return list;
     }
 
+    private List<String> createListOfPairIds(Map<Provider, List<Forecast>> mapByProviders) {
+        List<String> listIds = new ArrayList<>();
+
+        for (List<Forecast> list : mapByProviders.values()) {
+            if (list.size() == 2) {
+                list.sort((f1, f2) -> Boolean.compare(f1.isActual(), f2.isActual()));
+
+                listIds.add(String.format("%s,%s;",
+                        list.get(0).getId().toString(),
+                        list.get(1).getId().toString()));
+            }
+        }
+        return listIds;
+    }
 
     private TesterAverage createTesterAverage(String date, Provider provider, long cityId) {
         TesterAverage testerAverage = null;

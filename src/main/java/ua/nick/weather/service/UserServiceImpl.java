@@ -15,23 +15,6 @@ public class UserServiceImpl implements UserService {
     private CityRepository cityRepository;
 
     @Override
-    public long saveNewCity(City city) {
-        cityRepository.save(city);
-
-        return getCityIdByNameAndCountry(city.getName(), city.getCountry());
-    }
-
-    @Override
-    public long getCityIdByNameAndCountry(String name, String country) {
-        City city = cityRepository.findByNameAndCountry(name, country);
-
-        if (city != null)
-            return city.getId();
-
-        return -1;
-    }
-
-    @Override
     public City getCityById(Long id) {
         return cityRepository.findById(id);
     }
@@ -43,13 +26,14 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public City getCityFromPlace(String cityText, Double lat, Double lng) {
+    public City getCityFromPlace(String addressText, Double lat, Double lng) {
 
-        City city = parsePlace(cityText, lat, lng);
-        if (getCityIdByNameAndCountry(city.getName(), city.getCountry()) == -1)
+        City city = parsePlace(addressText, lat, lng);
+
+        if (getCityFromDB(city) == null)
             saveNewCity(city);
 
-        return city;
+        return getCityFromDB(city);
     }
 
     @Override
@@ -59,11 +43,48 @@ public class UserServiceImpl implements UserService {
         return cities.stream().map(City::textNameCountry).collect(Collectors.toList());
     }
 
+    private long saveNewCity(City city) {
+        cityRepository.save(city);
+
+        return getCityIdByNameAndCountry(city.getName(), city.getCountry());
+    }
+
+    private long getCityIdByNameAndCountry(String name, String country) {
+        City city = cityRepository.findByNameAndCountry(name, country);
+
+        if (city != null)
+            return city.getId();
+
+        return -1;
+    }
+
     private City parsePlace(String cityText, Double lat, Double lng) {
         String[] cityArray = cityText.split(",");
         String name = cityArray[0].trim();
         String country = cityArray[cityArray.length - 1].trim();
 
         return new City(name, country, lat, lng);
+    }
+
+    private City getCityFromDB(City city) {
+        City cityInDB;
+
+        cityInDB = getCityByNameAndCountry(city.getName(), city.getCountry());
+        if (cityInDB != null)
+            return cityInDB;
+
+        cityInDB = getCityByLatAndLon(city.getLat(), city.getLon());
+        if (cityInDB != null)
+            return cityInDB;
+
+        return null;
+    }
+
+    private City getCityByNameAndCountry(String name, String country) {
+        return cityRepository.findByNameAndCountry(name, country);
+    }
+
+    private City getCityByLatAndLon(double lat, double lng) {
+        return cityRepository.findByLatAndLon(lat, lng);
     }
 }

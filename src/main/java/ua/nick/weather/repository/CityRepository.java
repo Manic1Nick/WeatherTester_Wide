@@ -10,4 +10,5 @@ public interface CityRepository extends JpaRepository<City, Long> {
     City findById(Long id);
     City findByName(String name);
     City findByNameAndCountry(String name, String country);
+    City findByLatAndLon(double lat, double lon);
 }

@@ -58,16 +58,8 @@ public class StringUtils {
             return createNoUpdatedMessage(city);
 
         String baseMessage = String.format(createBaseUpdatedMessage(map, city), "forecast(s)");
-
-        //add message about providers with expanded json
-        String addingMessage = "</br></br>Additionally added:";
-        for (Provider provider : map.keySet())
-            if (provider.hasExpandedJson())
-                addingMessage += "</br> 1 actual weather from " + provider;
-
-        String errorMessage = "";
-        if (map.keySet().size() < Provider.lengthAll())
-            errorMessage = createErrorUpdatedMessage(map);
+        String addingMessage = createAddingMessage(map);
+        String errorMessage = createErrorUpdatedMessage(map);
 
         return baseMessage + addingMessage + errorMessage;
     }
@@ -78,10 +70,7 @@ public class StringUtils {
             return createNoUpdatedMessage(city);
 
         String baseMessage = String.format(createBaseUpdatedMessage(map, city), "actual weather(s)");
-
-        String errorMessage = "";
-        if (map.keySet().size() < Provider.lengthWithoutExpandedJson())
-            errorMessage = createErrorUpdatedMessage(map);
+        String errorMessage = createErrorUpdatedMessage(map);
 
         return baseMessage + errorMessage;
     }
@@ -103,14 +92,30 @@ public class StringUtils {
                 countedByProviders); //list forecasts
     }
 
+    private static String createAddingMessage(Map<Provider, Long> map) {
+        //add message about providers with expanded json
+        String addingMessage = "";
+        for (Provider provider : map.keySet())
+            if (provider.hasExpandedJson())
+                addingMessage += "</br> 1 actual weather from " + provider;
+
+        if (!addingMessage.isEmpty())
+            addingMessage = "</br></br>Additionally added:" + addingMessage;
+
+        return addingMessage;
+    }
+
     private static String createNoUpdatedMessage(City city) {
         return String.format("There is no need to update forecasts for %s from providers for this date. " +
                 "</br>Try tomorrow or re-update data.", city.textNameCountry());
     }
 
     private static String createErrorUpdatedMessage(Map<Provider, Long> map) {
-        String listErrorUpdated = "";
 
+        if (map.keySet().size() >= Provider.lengthWithoutExpandedJson())
+            return "";
+
+        String listErrorUpdated = "";
         for (Provider provider : Provider.values())
             if (!map.keySet().contains(provider))
                 listErrorUpdated += "<br/>" + provider.getName();
@@ -118,5 +123,4 @@ public class StringUtils {
         return String.format("</br></br>Error getting data from provider(s):%s<br/>Try connect later",
                 listErrorUpdated);
     }
-
 }

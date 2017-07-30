@@ -7,7 +7,10 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
-import ua.nick.weather.model.*;
+import ua.nick.weather.model.AverageDiff;
+import ua.nick.weather.model.City;
+import ua.nick.weather.model.Forecast;
+import ua.nick.weather.model.Provider;
 import ua.nick.weather.modelTester.TesterAverage;
 import ua.nick.weather.modelTester.TesterItem;
 import ua.nick.weather.service.UserService;
@@ -56,16 +59,12 @@ public class ApplicationController {
     }
 
     @RequestMapping(value = "/place", method = RequestMethod.GET)
-    public void getCity(@RequestParam("city") String cityText, @RequestParam("lat") Double lat,
+    public void getCity(@RequestParam("address") String addressText, @RequestParam("lat") Double lat,
                           @RequestParam("lng") Double lng, Model model, HttpServletResponse resp)
                             throws IOException {
 
-        City city = userService.getCityFromPlace(cityText, lat, lng);
-        Long cityid = userService.getCityIdByNameAndCountry(city.getName(), city.getCountry());
-        if (cityid == -1)
-            cityid = userService.saveNewCity(city);
-
-        resp.getWriter().printf(cityid.toString());
+        City city = userService.getCityFromPlace(addressText, lat, lng);
+        resp.getWriter().printf(String.valueOf(city.getId()));
     }
 
     @RequestMapping(value = "/main", method = RequestMethod.GET)
@@ -171,11 +170,11 @@ public class ApplicationController {
     @RequestMapping(value = "/forecasts/find/ids", method = RequestMethod.GET)
     public void findForecastIdsByDay(@RequestParam("cityid") long cityId,
                                      @RequestParam("date") String date,
-                                    HttpServletRequest req, HttpServletResponse resp, Model model)
+                                    HttpServletResponse resp)
                                     throws IOException {
         try {
             String ids = weatherService.getListForecastIdsForDateByCityId(date, cityId).stream()
-                    .collect(Collectors.joining(";"));
+                    .collect(Collectors.joining());
             resp.getWriter().print(ids);
 
         } catch (Exception e) {
@@ -201,6 +200,40 @@ public class ApplicationController {
 
         return "day_tester";
     }
+
+    /*@RequestMapping(value = "/forecasts/check/newday", method = RequestMethod.GET)
+    public void changeDay(@RequestParam("date") String date,
+                          HttpServletRequest req, HttpServletResponse resp)
+            throws IOException {
+
+        if (req.getParameter("index") != null)
+            date = StringUtils.changeDateByIndex(date, req.getParameter("index"));
+        date = index != null ? StringUtils.changeDateByIndex(date, index) : date ;
+        resp.getWriter().print(date);
+    }
+
+    @RequestMapping(value = {"/forecasts/show/newday"}, method = RequestMethod.GET)
+    public String showForecastsByNewDate(@RequestParam("cityid") long cityId,
+                                         @RequestParam("date") String date,
+                                         HttpServletRequest req, Model model)
+                                            throws ForecastNotFoundInDBException {
+        if (req.getParameter("index") != null)
+            date = StringUtils.changeDateByIndex(date, req.getParameter("index"));
+        model.addAttribute("date", date);
+
+        Map<Provider, List<Forecast>> map = weatherService.getListForecastsForDateByCityId(date, cityId);
+
+        City city = userService.getCityById(cityId);
+        model.addAttribute("city", city);
+
+        List<TesterAverage> averageTesters = weatherService.createListAverageTesters(date, cityId);
+        model.addAttribute("listAverageTester", averageTesters);
+
+        Map<Provider, List<TesterItem>> mapItemTesters = weatherService.createMapItemTesters(map);
+        model.addAttribute("mapItemTester", mapItemTesters);
+
+        return "day_tester";
+    }*/
 
     @RequestMapping(value = {"/update/all/average_diff"}, method = RequestMethod.GET)
     public void updateAverageDiffForAllDays(@RequestParam("cityid") long cityId, HttpServletResponse resp)

@@ -18,21 +18,17 @@ import java.util.Map;
 
 public interface WeatherService {
 
-    void saveNewForecast(Forecast forecast);
-    Forecast getForecastById(Long id);
-
     List<Forecast> getAllNewForecasts(long cityId)
             throws IOException, URISyntaxException, ParseException, NoDataFromProviderException;
     List<Forecast> getAllNewActuals(long cityId)
             throws IOException, URISyntaxException, ParseException;
-    /*Forecast getActualWeatherFromProviderByCityId(Provider provider, long cityId)
-            throws URISyntaxException, IOException, ParseException;*/
     List<String> getListForecastIdsForDateByCityId(String date, long cityId)
+            throws ForecastNotFoundInDBException;
+    Map<Provider, List<Forecast>> getListForecastsForDateByCityId(String date, long cityId)
             throws ForecastNotFoundInDBException;
 
     void saveNewDiff(Diff diff);
     List<AverageDiff> getAllAverageDiffsByCityId(long cityId);
-    //List<Integer> createListOfAverageItems();
     List<TesterAverage> createListAverageTesters(String date, long cityId);
     Map<Provider, List<TesterItem>> createMapItemTesters(String ids);
     List<Diff> createListDiffsForPeriodByCityId(LocalDate from, LocalDate to, long cityId);

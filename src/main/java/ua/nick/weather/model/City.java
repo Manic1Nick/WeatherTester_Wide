@@ -9,8 +9,8 @@ public class City {
     private long id;
     private String name;
     private String country;
-    private Double lon;
     private Double lat;
+    private Double lon;
 
     public City() {
     }
@@ -24,17 +24,17 @@ public class City {
         this.country = country;
     }
 
-    public City(String name, String country, Double lon, Double lat) {
+    public City(String name, String country, Double lat, Double lon) {
         this.name = name;
         this.country = country;
-        this.lon = lon;
         this.lat = lat;
+        this.lon = lon;
     }
 
-    public City(String name, Double lon, Double lat) {
+    public City(String name, Double lat, Double lon) {
         this.name = name;
-        this.lon = lon;
         this.lat = lat;
+        this.lon = lon;
     }
 
     @Id
@@ -64,20 +64,20 @@ public class City {
         this.country = country;
     }
 
-    public Double getLon() {
-        return lon;
-    }
-
-    public void setLon(Double lon) {
-        this.lon = lon;
-    }
-
     public Double getLat() {
         return lat;
     }
 
     public void setLat(Double lat) {
         this.lat = lat;
+    }
+
+    public Double getLon() {
+        return lon;
+    }
+
+    public void setLon(Double lon) {
+        this.lon = lon;
     }
 
     public String textNameCountry() {

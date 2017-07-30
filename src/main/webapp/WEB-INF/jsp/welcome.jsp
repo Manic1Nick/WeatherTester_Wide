@@ -146,28 +146,29 @@
     }
     function getCity() {
         var city = place.value;
-        var lat, lng;
+        var lat, lng, address;
         var geocoder = new google.maps.Geocoder();
         geocoder.geocode( { 'address': city }, function(results, status) {
             if (status == google.maps.GeocoderStatus.OK) {
                 lat = results[0].geometry.location.lat();
                 lng = results[0].geometry.location.lng();
+                address = results[0].formatted_address;
 
-                openMain(city, lat, lng);
+                openMain(address, lat, lng);
             } else {
                 alert("Something got wrong with Google API: " + status);
             }
         });
     }
 
-    function openMain(city, lat, lng) {
+    function openMain(address, lat, lng) {
         var latRound = roundDouble(lat, 4);
         var lngRound = roundDouble(lng, 4);
         $.ajax({
             url: '${contextPath}/place',
             type: 'GET',
             data: {
-                city:city,
+                address:address,
                 lat:latRound,
                 lng:lngRound
             }

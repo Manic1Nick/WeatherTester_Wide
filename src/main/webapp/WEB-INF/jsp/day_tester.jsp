@@ -174,15 +174,15 @@
                 cityid: cityId
             }
         }).success(function (resp) {
-            if (resp.indexOf(";") == -1) {
-                $("#modalName").html("Error getting info:");
-                $("#modalData").html(resp);
-                $("#openModal").modal('show');
-
-            } else {
+            if (resp.indexOf(";") != -1) {
                 window.location.assign("${contextPath}/forecasts/show/day?date=" + date +
                         "&cityid=" + cityId +
                         "&ids=" + resp);
+
+            } else {
+                $("#modalName").html("Error getting info:");
+                $("#modalData").html(resp);
+                $("#openModal").modal('show');
             }
 
         }).error(function (resp) {
