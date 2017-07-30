@@ -16,8 +16,8 @@ public enum Provider {
     ),
 
     WUNDERGROUND(
-            "http://api.wunderground.com/api/8a173cdd18d0cabe/forecast/q/{lng},{lat}.json",
-            "http://api.wunderground.com/api/8a173cdd18d0cabe/conditions/q/{lng},{lat}.json",
+            "http://api.wunderground.com/api/8a173cdd18d0cabe/forecast/q/{lat},{lng}.json",
+            "http://api.wunderground.com/api/8a173cdd18d0cabe/conditions/q/{lat},{lng}.json",
             "small_wu_logo.png",
             "row_wu_logo.png",
             "#9d9ad1",
@@ -26,8 +26,8 @@ public enum Provider {
     ),
 
     FORECA(
-            "http://apitest.foreca.net/?lon={lat}&lat={lng}&key=IT7YtSoC0tgh3Chl0PHaZmb7g&format=json",
-            "http://apitest.foreca.net/?lon={lat}&lat={lng}&key=IT7YtSoC0tgh3Chl0PHaZmb7g&format=json",
+            "http://apitest.foreca.net/?lon={lng}&lat={lat}&key=IT7YtSoC0tgh3Chl0PHaZmb7g&format=json",
+            "http://apitest.foreca.net/?lon={lng}&lat={lat}&key=IT7YtSoC0tgh3Chl0PHaZmb7g&format=json",
             "small_foreca_logo.png",
             "row_foreca_logo.png",
             "#29bfe4",
@@ -36,8 +36,8 @@ public enum Provider {
     ),
 
     DARK_SKY(
-            "https://api.darksky.net/forecast/030645a49019b80fcc061e3505f1b905/{lng},{lat}",
-            "https://api.darksky.net/forecast/030645a49019b80fcc061e3505f1b905/{lng},{lat}",
+            "https://api.darksky.net/forecast/030645a49019b80fcc061e3505f1b905/{lat},{lng}",
+            "https://api.darksky.net/forecast/030645a49019b80fcc061e3505f1b905/{lat},{lng}",
             "small_darksky_logo.png",
             "row_darksky_logo.png",
             "#29e45c",

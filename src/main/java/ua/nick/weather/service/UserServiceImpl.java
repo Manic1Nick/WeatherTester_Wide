@@ -60,7 +60,11 @@ public class UserServiceImpl implements UserService {
 
     private City parsePlace(String cityText, Double lat, Double lng) {
         String[] cityArray = cityText.split(",");
+
         String name = cityArray[0].trim();
+        if (name.toLowerCase().endsWith("city"))
+            name = name.replace(" City", "");
+
         String country = cityArray[cityArray.length - 1].trim();
 
         return new City(name, country, lat, lng);
