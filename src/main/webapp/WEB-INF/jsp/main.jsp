@@ -624,10 +624,15 @@
 
 <style>
     body {
-        background-image: url("${contextPath}/resources/images/Sky_Background-56.jpg");
+        /*background-image: url("${contextPath}/resources/images/Sky_Background-56.jpg");
         background-repeat:no-repeat;
         background-size:cover;
-        background-position:center top;
+        background-position:center top;*/
+        background: url('${contextPath}/resources/images/Sky_Background-56.jpg') no-repeat fixed;
+        -webkit-background-size: cover;
+        -moz-background-size: cover;
+        -o-background-size: cover;
+        background-size: cover;
     }
 
     a {
