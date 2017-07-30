@@ -108,12 +108,14 @@
                             <strong>test weather</strong>
                         </button>
                     </p>
-                    <p>
-                        <button href="#menu-toggle" class="btn btn-default" id="menu-toggle">Open list of cities
-                            <br>
-                            <small>already tested</small>
-                        </button>
-                    </p>
+                    <c:if test="${cities != null}">
+                        <p>
+                            <button href="#menu-toggle" class="btn btn-default" id="menu-toggle">Open list of cities
+                                <br>
+                                <small>already tested</small>
+                            </button>
+                        </p>
+                    </c:if>
                 </div>
             </div>
         </div>
