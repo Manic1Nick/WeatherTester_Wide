@@ -120,7 +120,7 @@ public class StringUtils {
             if (!map.keySet().contains(provider))
                 listErrorUpdated += "<br/>" + provider.getName();
 
-        return String.format("</br></br>Error getting data from provider(s):%s<br/>Try connect later",
+        return String.format("</br></br>No forecasts from provider(s):%s<br/>Try connect later",
                 listErrorUpdated);
     }
 }
